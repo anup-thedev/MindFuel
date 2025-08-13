@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FocusMate – Digital Wellbeing</title>
+  <style>
+    :root{
+      --bg: #0f1220;
+      --panel: #15192d;
+      --panel-2:#1a1f37;
+      --muted: #9aa2b1;
+      --text: #e7e9ee;
+      --accent: #7c9cff;
+      --accent-2:#6ee7b7;
+      --danger:#ff6b6b;
+      --warning:#ffd166;
+      --shadow: 0 10px 20px rgba(0,0,0,.25);
+      --radius: 16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background: radial-gradient(1200px 800px at 100% -200px, #233, transparent 60%),
+                  radial-gradient(1000px 600px at -100px 100%, #223, transparent 60%),
+                  var(--bg);
+    }
+    /* App shell */
+    .app{display:grid; grid-template-columns: 260px 1fr; min-height:100vh}
+    aside{
+      position:sticky; top:0; align-self:start; height:100vh; overflow:auto;
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border-right:1px solid rgba(255,255,255,.06);
+    }
+    .brand{display:flex; gap:.75rem; align-items:center; padding:1.25rem 1rem; border-bottom:1px solid rgba(255,255,255,.06)}
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2)); box-shadow:var(--shadow)}
+    .brand h1{font-size:1.05rem; margin:0}
+    nav{padding:.5rem}
+    .nav-group{margin:.75rem .5rem}
+    .nav-title{font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:.5rem 1rem}
+    .nav-item{display:flex; align-items:center; gap:.75rem; padding:.65rem 1rem; margin:.25rem 0; border-radius:12px; color:var(--text); text-decoration:none}
+    .nav-item:hover{background:rgba(255,255,255,.06)}
+    .nav-item.active{background:rgba(124,156,255,.18); outline:1px solid rgba(124,156,255,.35)}
+
+    header{
+      position:sticky; top:0; z-index:10;
+      display:flex; align-items:center; gap:1rem; justify-content:space-between;
+      padding:1rem 1.25rem; background:rgba(15,18,32,.65); backdrop-filter:saturate(160%) blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .search{display:flex; align-items:center; gap:.5rem; background:var(--panel); border:1px solid rgba(255,255,255,.08); padding:.6rem .8rem; border-radius:12px; flex:1; max-width:520px}
+    .search input{all:unset; width:100%}
+    .actions{display:flex; gap:.5rem; align-items:center}
+    .btn{border:none; border-radius:12px; padding:.6rem .9rem; background:var(--panel); color:var(--text); box-shadow:var(--shadow); cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#0b1020}
+
+    main{padding:1.25rem; display:grid; gap:1rem}
+    .grid{display:grid; gap:1rem; grid-template-columns: repeat(12, 1fr)}
+    .card{background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); padding:1rem; box-shadow: var(--shadow)}
+    .card h3{margin:.25rem 0 .75rem; font-size:1rem}
+    .sub{color:var(--muted); font-size:.85rem}
+
+    /* Dashboard top row */
+    .kpi{display:flex; align-items:flex-end; justify-content:space-between}
+    .kpi strong{font-size:1.6rem}
+    .chip{display:inline-flex; align-items:center; gap:.35rem; font-size:.8rem; padding:.25rem .55rem; border-radius:999px; background:rgba(255,255,255,.07)}
+
+    /* Timer */
+    .timer{display:grid; place-items:center; height:280px; position:relative}
+    .ring{width:200px; height:200px; border-radius:50%; background:conic-gradient(var(--accent) 0% 40%, rgba(255,255,255,.08) 40% 100%); display:grid; place-items:center; box-shadow: inset 0 0 0 14px rgba(0,0,0,.25)}
+    .ring-inner{width:160px; height:160px; border-radius:50%; background: #0c1022; display:grid; place-items:center}
+    .time{font-variant-numeric: tabular-nums; font-size:2rem}
+    .timer-actions{display:flex; gap:.5rem; justify-content:center; margin-top:1rem}
+
+    /* Lists */
+    .list{display:flex; flex-direction:column; gap:.75rem}
+    .row{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.65rem .75rem; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); border-radius:12px}
+
+    /* Responsive */
+    .mobile-top{display:none}
+    @media (max-width: 1024px){
+      .app{grid-template-columns: 1fr}
+      aside{position:fixed; inset:0 40% 0 0; transform:translateX(-100%); transition:.25s transform ease; z-index:20}
+      aside.open{transform:translateX(0)}
+      .mobile-top{display:flex}
+      header{position:relative}
+      main{padding:1rem}
+    }
+    footer{padding:1rem; color:var(--muted); text-align:center}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <h1>FocusMate</h1>
+      </div>
+      <nav>
+        <div class="nav-group">
+          <div class="nav-title">Overview</div>
+          <a class="nav-item active" href="#dashboard">Dashboard</a>
+          <a class="nav-item" href="#timer">Focus Timer</a>
+          <a class="nav-item" href="#blocker">Blocklist</a>
+          <a class="nav-item" href="#goals">Goals</a>
+          <a class="nav-item" href="#breaks">Mindful Breaks</a>
+          <a class="nav-item" href="#reports">Reports</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">System</div>
+          <a class="nav-item" href="#settings">Settings</a>
+          <a class="nav-item" href="#profile">Profile</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Content -->
+    <div>
+      <header>
+        <div class="mobile-top">
+          <button class="btn" id="menuBtn" aria-controls="sidebar" aria-expanded="false">☰ Menu</button>
+        </div>
+        <div class="search" role="search">
+          <span>🔎</span>
+          <input placeholder="Search actions, goals, websites…" aria-label="Search" />
+        </div>
+        <div class="actions">
+          <button class="btn" title="Do Not Disturb">⛔ DND</button>
+          <button class="btn primary" title="Start Focus">▶ Start Focus</button>
+        </div>
+      </header>
+
+      <main>
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="grid" aria-labelledby="dashboard-title">
+          <h2 id="dashboard-title" class="sr-only">Dashboard</h2>
+          <div class="card" style="grid-column: span 3">
+            <h3>Today’s Screen Time</h3>
+            <div class="kpi"><strong>3h 42m</strong><span class="chip">▼ 12% vs yesterday</span></div>
+            <p class="sub">Goal: ≤ 4h / day</p>
+          </div>
+          <div class="card" style="grid-column: span 3">
+            <h3>Focused Time</h3>
+            <div class="kpi"><strong>1h 25m</strong><span class="chip">+2 sessions</span></div>
+            <p class="sub">Streak: 4 days</p>
+          </div>
+          <div class="card" style="grid-column: span 3">
+            <h3>Top Distractions</h3>
+            <div class="list">
+              <div class="row"><span>Youtube</span><span class="sub">48m</span></div>
+              <div class="row"><span>TikTok</span><span class="sub">33m</span></div>
+              <div class="row"><span>Instagram</span><span class="sub">25m</span></div>
+            </div>
+          </div>
+          <div class="card" style="grid-column: span 3">
+            <h3>Quick Actions</h3>
+            <div class="list">
+              <div class="row"><span>Enable Focus Mode</span><button class="btn">Enable</button></div>
+              <div class="row"><span>Add Website to Blocklist</span><button class="btn">Add</button></div>
+              <div class="row"><span>Set Daily Goal</span><button class="btn">Set</button></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TIMER -->
+        <section id="timer" class="grid" aria-labelledby="timer-title">
+          <h2 id="timer-title" class="sr-only">Focus Timer</h2>
+          <div class="card" style="grid-column: span 5">
+            <h3>Pomodoro Timer</h3>
+            <div class="timer">
+              <div class="ring" role="img" aria-label="Progress ring">
+                <div class="ring-inner">
+                  <div class="time" aria-live="polite">25:00</div>
+                </div>
+              </div>
+            </div>
+            <div class="timer-actions">
+              <button class="btn primary">Start</button>
+              <button class="btn">Pause</button>
+              <button class="btn">Reset</button>
+            </div>
+          </div>
+          <div class="card" style="grid-column: span 7">
+            <h3>Session Settings</h3>
+            <div class="list">
+              <div class="row"><span>Work Length</span><span class="sub">25 min</span></div>
+              <div class="row"><span>Short Break</span><span class="sub">5 min</span></div>
+              <div class="row"><span>Long Break</span><span class="sub">15 min</span></div>
+              <div class="row"><span>Long Break After</span><span class="sub">4 sessions</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- BLOCKLIST -->
+        <section id="blocker" class="grid" aria-labelledby="blocker-title">
+          <h2 id="blocker-title" class="sr-only">Distraction Blocker</h2>
+          <div class="card" style="grid-column: span 6">
+            <h3>Blocked Websites</h3>
+            <div class="list">
+              <div class="row"><span>youtube.com</span><button class="btn">Remove</button></div>
+              <div class="row"><span>tiktok.com</span><button class="btn">Remove</button></div>
+              <div class="row"><span>instagram.com</span><button class="btn">Remove</button></div>
+            </div>
+          </div>
+          <div class="card" style="grid-column: span 6">
+            <h3>Add to Blocklist</h3>
+            <div class="row">
+              <input style="all:unset; background:rgba(255,255,255,.06); padding:.6rem .75rem; border-radius:12px; flex:1" placeholder="Enter URL (e.g., twitter.com)" />
+              <button class="btn primary">Add</button>
+            </div>
+            <p class="sub" style="margin-top:.75rem">Tip: Blocklist auto-enables during focus sessions.</p>
+          </div>
+        </section>
+
+        <!-- GOALS -->
+        <section id="goals" class="grid" aria-labelledby="goals-title">
+          <h2 id="goals-title" class="sr-only">Goals</h2>
+          <div class="card" style="grid-column: span 7">
+            <h3>Goals & Progress</h3>
+            <div class="list">
+              <div class="row"><span>≤ 4h screen time</span><span class="chip">In progress</span></div>
+              <div class="row"><span>2 focus sessions / day</span><span class="chip">On track</span></div>
+              <div class="row"><span>No phone after 10 PM</span><span class="chip" style="background:rgba(110,231,183,.2)">Streak 5</span></div>
+            </div>
+          </div>
+          <div class="card" style="grid-column: span 5">
+            <h3>Create New Goal</h3>
+            <div class="row"><input style="all:unset; background:rgba(255,255,255,.06); padding:.6rem .75rem; border-radius:12px; flex:1" placeholder="Describe your goal…" /><button class="btn primary">Save</button></div>
+            <p class="sub" style="margin-top:.75rem">Examples: “Read 20 mins daily”, “No social media in the morning”.</p>
+          </div>
+        </section>
+
+        <!-- MINDFUL BREAKS -->
+        <section id="breaks" class="grid" aria-labelledby="breaks-title">
+          <h2 id="breaks-title" class="sr-only">Mindful Breaks</h2>
+          <div class="card" style="grid-column: span 12">
+            <h3>Quick Break Suggestions</h3>
+            <div class="grid" style="grid-template-columns: repeat(4, 1fr)">
+              <div class="card"><strong>🌬️ 1‑min Breathing</strong><p class="sub">Inhale 4 • Hold 4 • Exhale 6</p></div>
+              <div class="card"><strong>🚶 2‑min Walk</strong><p class="sub">Stand up and stretch your legs</p></div>
+              <div class="card"><strong>💧 Hydrate</strong><p class="sub">Drink a glass of water</p></div>
+              <div class="card"><strong>👀 Eye Rest</strong><p class="sub">Look 20ft away for 20s</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- REPORTS -->
+        <section id="reports" class="grid" aria-labelledby="reports-title">
+          <h2 id="reports-title" class="sr-only">Reports</h2>
+          <div class="card" style="grid-column: span 12">
+            <h3>Weekly Overview</h3>
+            <div style="height:220px; border-radius:12px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.05) 6px, transparent 6px, transparent 40px), linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); display:grid; place-items:center; color:var(--muted)">Chart Placeholder</div>
+          </div>
+        </section>
+
+        <!-- SETTINGS (stub) -->
+        <section id="settings" class="grid" aria-labelledby="settings-title">
+          <h2 id="settings-title" class="sr-only">Settings</h2>
+          <div class="card" style="grid-column: span 12">
+            <h3>Preferences</h3>
+            <div class="list">
+              <div class="row"><span>Theme</span><button class="btn">Dark</button></div>
+              <div class="row"><span>Notifications</span><button class="btn">On</button></div>
+              <div class="row"><span>Daily Reminder</span><button class="btn">9:00 AM</button></div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <footer>
+        Built for your focus • © <span id="year"></span> FocusMate
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebar = document.getElementById('sidebar');
+    if(menuBtn){
+      menuBtn.addEventListener('click', ()=>{
+        const open = sidebar.classList.toggle('open');
+        menuBtn.setAttribute('aria-expanded', String(open));
+      });
+    }
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
